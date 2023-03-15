@@ -8,7 +8,6 @@ import org.nimofy.annotations.Table;
 import javax.sql.DataSource;
 import java.lang.reflect.Field;
 import java.sql.*;
-import java.time.LocalDateTime;
 
 public class Session {
     private final DataSource dataSource;
@@ -38,16 +37,16 @@ public class Session {
     }
 
     @SneakyThrows
-    private <T> T buildFromResultSet(ResultSet resultSet, Class<T> clazz)  {
+    private <T> T buildFromResultSet(ResultSet resultSet, Class<T> clazz) {
         resultSet.next();
         var newInstance = clazz.getConstructor().newInstance();
         for (Field field : clazz.getDeclaredFields()) {
             field.setAccessible(true);
             var fieldClazz = field.getType();
-            if (field.isAnnotationPresent(Column.class)){
+            if (field.isAnnotationPresent(Column.class)) {
                 var sqlQueryName = field.getAnnotation(Column.class).name();
                 var value = resultSet.getObject(sqlQueryName);
-                if (value instanceof Timestamp){
+                if (value instanceof Timestamp) {
                     field.set(newInstance, ((Timestamp) value).toLocalDateTime());
                 } else {
                     field.set(newInstance, fieldClazz.cast(resultSet.getObject(sqlQueryName)));
